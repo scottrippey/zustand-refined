@@ -10,18 +10,7 @@ import { StoreApi, UseBoundStore, useStore } from "zustand";
  */
 
 /**
- * Same as Zustand's StoreApi,
- * but with a more generic version of `setState`,
- * which allows for middleware to modify the signature (eg. devtools).
- */
-export type GenericStoreApi<TState = any> = Override<
-  StoreApi<TState>,
-  { setState: (...args: any[]) => void }
->;
-type Override<T, TOverrides> = Omit<T, keyof TOverrides> & TOverrides;
-
-/**
- * Creates a global (singleton) store.
+ * Creates a global (singleton) state.
  *
  * This enforces best practices within Zustand,
  * and ensures top performance within your application.
@@ -31,7 +20,7 @@ type Override<T, TOverrides> = Omit<T, keyof TOverrides> & TOverrides;
  * - The Actions returned by `actions`
  *
  * @example
- * export const [ todoHooks, todoActions ] = createGlobalStore({
+ * export const [ todoHooks, todoActions ] = createGlobalState({
  *   store: () => createStore(() => ({
  *     todos: [] as TodoItem[]
  *   })),
@@ -56,13 +45,13 @@ type Override<T, TOverrides> = Omit<T, keyof TOverrides> & TOverrides;
  *   }),
  * });
  */
-export function createGlobalStore<
+export function createGlobalState<
   TStore extends GenericStoreApi,
   TActions,
   THook = UseBoundStore<TStore>,
 >(config: {
   /**
-   * Returns a Zustand store with the initial state
+   * Creates a Zustand store with the initial state
    */
   store: () => TStore;
   /**
@@ -70,7 +59,7 @@ export function createGlobalStore<
    * what hooks you expose externally.
    *
    * By default, the Zustand hook exposes your entire state object (with an optional `selector`).
-   * Instead, you can return individual hooks with selectors, for exposing specific parts of the state.
+   * Instead, this lets you return individual hooks, for exposing specific parts of the state.
    *
    * @param useStore - The default Zustand hook, which
    *                   allows you to access the state
@@ -111,12 +100,12 @@ export function createGlobalStore<
 }
 
 /**
- * Creates a local Context-based store.
+ * Creates Context-based state.
  *
  * This enforces best practices within Zustand,
  * and ensures top performance within your application.
  *
- * `createLocalStore` differs from `createGlobalStore` in 3 ways:
+ * `createStateWithProvider` differs from `createGlobalState` in 3 ways:
  * - The `StoreProvider` can create multiple isolated stores; there is no global store
  * - You can pass props to the `StoreProvider`, which can be used when creating the store or performing actions
  * - The "actions" can only be accessed by a hook - it is not a static object
@@ -129,7 +118,7 @@ export function createGlobalStore<
  * @example
  *
  */
-export function createLocalStore<
+export function createStateWithProvider<
   TStore extends GenericStoreApi,
   TActions,
   THook = UseBoundStore<TStore>,
@@ -146,7 +135,7 @@ export function createLocalStore<
    * what hooks you expose externally.
    *
    * By default, the Zustand hook exposes your entire state object (with an optional `selector`).
-   * Instead, you can return individual hooks with selectors, for exposing specific parts of the state.
+   * Instead, this lets you return individual hooks, for exposing specific parts of the state.
    *
    * @param useStore - The default Zustand hook, which
    *                   allows you to access the state
@@ -229,3 +218,14 @@ export function createLocalStore<
 
 export type StoreProvider<TProps> = FC<PropsWithChildren<TProps>>;
 export type ActionsHook<TActions> = () => TActions;
+
+/**
+ * Same as Zustand's StoreApi,
+ * but with a more generic version of `setState`,
+ * which allows for middleware to modify the signature (eg. devtools).
+ */
+export type GenericStoreApi<TState = any> = Override<
+  StoreApi<TState>,
+  { setState: (...args: any[]) => void }
+>;
+type Override<T, TOverrides> = Omit<T, keyof TOverrides> & TOverrides;

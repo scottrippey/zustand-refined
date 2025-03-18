@@ -1,29 +1,29 @@
 import { createStore } from "zustand";
-import { createLocalStore } from "../zustand-actions-2";
+import { createStateWithProvider } from "../zustand-actions";
 
 type CounterProps = { initialCount?: number; incrementBy?: number };
-export const counter = createLocalStore({
-  store(props: CounterProps) {
-    return createStore((set, get) => ({
-      count: props.initialCount ?? 0,
-    }));
-  },
-  actions(setState, getState, props) {
-    return {
-      increment() {
-        setState((curr) => ({
-          count: curr.count + (props.incrementBy ?? 1),
-        }));
-      },
-    };
-  },
-  hooks(useStore, useActions, Provider) {
-    return {
-      useActions,
-      useCount: () => useStore((s) => s.count),
-    };
-  },
-});
+export const [counterHooks, useCounterActions, CounterProvider] =
+  createStateWithProvider({
+    store(props: CounterProps) {
+      return createStore(() => ({
+        count: props.initialCount ?? 0,
+      }));
+    },
+    actions(setState, _getState, props) {
+      return {
+        increment() {
+          setState((curr) => ({
+            count: curr.count + (props.incrementBy ?? 1),
+          }));
+        },
+      };
+    },
+    hooks(useStore) {
+      return {
+        useCount: () => useStore((s) => s.count),
+      };
+    },
+  });
 
 // UI Demo:
 
@@ -38,7 +38,6 @@ function CountDisplay() {
 function IncrementButton() {
   counterHooks.useCount();
   const countActions = useCounterActions();
-  const countActions = counterHooks.useActions();
   return (
     <button
       onClick={() => {

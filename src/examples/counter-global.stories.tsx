@@ -1,22 +1,25 @@
 import { useEffect } from "react";
-import { createGlobalStateWithActions } from "../zustand-actions";
+import { createStore } from "zustand";
+import { createGlobalState } from "../zustand-actions";
 
-const [useCounter, counterActions] = createGlobalStateWithActions(
-  {
-    count: 0,
-  },
-  (setState, getState) => ({
+const [useCount, counterActions] = createGlobalState({
+  store: () =>
+    createStore(() => ({
+      count: 0,
+    })),
+  hooks: (useStore) => () => useStore((s) => s.count),
+  actions: (setState) => ({
     increment() {
       setState((old) => ({ count: old.count + 1 }));
     },
   }),
-);
+});
 
 /**
  * This component reads the state
  */
 function CounterDisplay() {
-  const c = useCounter((c) => c.count);
+  const c = useCount();
   return (
     <span>
       Count: <strong>{c}</strong>

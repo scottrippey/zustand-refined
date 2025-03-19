@@ -100,25 +100,25 @@ export function createGlobalState<
 }
 
 /**
- * Creates Context-based state.
+ * Creates Context-based states.
  *
  * This enforces best practices within Zustand,
  * and ensures top performance within your application.
  *
- * `createStateWithProvider` differs from `createGlobalState` in 3 ways:
+ * `createProviderState` differs from `createGlobalState` in 3 ways:
  * - The `StoreProvider` can create multiple isolated stores; there is no global store
  * - You can pass props to the `StoreProvider`, which can be used when creating the store or performing actions
- * - The "actions" can only be accessed by a hook - it is not a static object
+ * - The "actions" must be accessed by a hook - it is not a static object
  *
  * @returns a tuple with 3 items:
- * - The Hooks returned by `hooks`
- * - A **hook** for the Actions returned by `actions`
+ * - The hooks returned by `hooks`
+ * - A `ActionsHook` for the Actions returned by `actions`
  * - A `StoreProvider` for creating the isolated stores in your React application
  *
  * @example
  *
  */
-export function createStateWithProvider<
+export function createProviderState<
   TStore extends GenericStoreApi,
   TActions,
   THook = UseBoundStore<TStore>,

@@ -1,17 +1,16 @@
 import { useEffect } from "react";
 import { createStore } from "zustand";
-import { createGlobalState, createStateWithProvider } from "../zustand-actions";
+import { createProviderState } from "../zustand-actions";
 
-const [useCounter, useCounterActions, CounterProvider] =
-  createStateWithProvider({
-    store: (props: { initialCount?: number }) =>
-      createStore(() => props.initialCount ?? 0),
-    actions: (setState) => ({
-      increment() {
-        setState((current) => current + 1);
-      },
-    }),
-  });
+const [useCounter, useCounterActions, CounterProvider] = createProviderState({
+  store: (props: { initialCount?: number }) =>
+    createStore(() => props.initialCount ?? 0),
+  actions: (setState) => ({
+    increment() {
+      setState((current) => current + 1);
+    },
+  }),
+});
 
 /**
  * This component reads the state
@@ -61,7 +60,7 @@ function CounterWidget() {
     </>
   );
 }
-function App() {
+export function App() {
   return (
     <>
       <CounterProvider>

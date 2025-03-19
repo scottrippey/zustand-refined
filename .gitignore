@@ -1,2 +1,25 @@
-.idea
-node_modules
+# Compiled output
+/dist
+/build
+
+# Dependencies
+/node_modules
+
+# IDE and editor files
+.idea/
+.vscode/
+
+# Logs and temp files
+*.log
+tmp/
+temp/
+*.tmp
+
+# Environment files
+.env
+
+# Test reports, coverage
+/coverage
+
+# macOS system files
+.DS_Store

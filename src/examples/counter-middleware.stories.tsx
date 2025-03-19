@@ -1,61 +1,66 @@
+import { useEffect } from "react";
 import { createStore } from "zustand";
 import { devtools } from "zustand/middleware/devtools";
 import { immer } from "zustand/middleware/immer";
-import { createGlobalStateWithActions } from "../zustand-actions";
-import { createGlobalStateWithActionsM } from "../zustand-actions-middleware";
+import { createGlobalState } from "../zustand-actions";
 
-const storePlain = createStore((setState) => ({
-  count: 0,
-  inc() {
-    setState((old) => ({ count: old.count + 1 }));
-  },
-}));
-const storeDevtools = createStore(
-  devtools((setState, getState) => ({
-    count: 0,
-    badIncrement() {
-      setState((old) => ({ count: old.count + 1 }), false, "increment");
-    },
-  })),
-);
-storePlain.setState(
-  ///
-  (old) => ({ count: old.count + 1 }),
-  false,
-  "increment",
-);
-storeDevtools.setState(
-  ///
-  (old) => ({ count: old.count + 1 }),
-  false,
-  "increment",
-);
-
-const [useCounter, counterActions] = createGlobalStateWithActionsM(
-  ({ setState, getState }) => ({
-    state: {
-      count: 0,
-      incrementBy: 1,
-      findStepsTaken() {
-        return this.count / this.incrementBy;
-        return getState().count + getState().incrementBy;
-      },
-    },
-    actions: {
-      increment() {
-        setState((state) => ({
-          count: state.count + state.incrementBy,
-        }));
-      },
-      speedUp(amount = 1) {
-        setState((state) => ({
-          incrementBy: state.incrementBy + amount,
-        }));
-      },
+export const [useCount, counterActions] = createGlobalState({
+  store: () =>
+    createStore(
+      devtools(
+        immer(() => ({
+          count: 0,
+        })),
+      ),
+    ),
+  hooks: (useStore) => () => useStore((s) => s.count),
+  actions: (setState) => ({
+    increment(amount = 1) {
+      setState(
+        (curr) => {
+          // This syntax is supported due to `immer` middleware:
+          curr.count += amount;
+        },
+        false,
+        // This 3rd parameter is used by `devtools` middleware:
+        { type: "count/increment" },
+      );
     },
   }),
-);
+});
 
-function middleware<T>(cb: T): T {
-  return cb;
+function IncrementButton() {
+  return (
+    <button
+      onClick={() => {
+        counterActions.increment();
+      }}
+    >
+      Increment
+    </button>
+  );
+}
+function CountDisplay() {
+  const count = useCount();
+  return (
+    <label>
+      Count: <strong>{count}</strong>
+    </label>
+  );
+}
+function useAutoIncrement() {
+  useEffect(() => {
+    const t = setInterval(() => counterActions.increment(), 1000);
+    return () => clearInterval(t);
+  }, []);
+}
+
+function App() {
+  useAutoIncrement();
+  return (
+    <>
+      <CountDisplay />
+      <IncrementButton />
+    </>
+  );
 }

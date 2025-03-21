@@ -2,6 +2,32 @@
 
 `zustand-refined` makes the best of Zustand, by making it easy to adhere to its **best practices**.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Zustand Best Practices](#zustand-best-practices)
+- [Installation](#installation)
+- [Usage Example](#usage-example)
+  - [Define your `store`, `hooks`, and `actions`](#define-your-store-hooks-and-actions)
+  - [Using hooks and actions](#using-hooks-and-actions)
+- [API Docs](#api-docs)
+  - [createGlobalState](#createglobalstate)
+  - [createProviderState](#createproviderstate)
+  - [Configuration Options](#configuration-options)
+    - [`store: (props) => ZustandStore`](#store-props--zustandstore)
+    - [`hooks: (useStore) => THooks`](#hooks-usestore--thooks)
+    - [`actions: (setState, getState, props) => TActions`](#actions-setstate-getstate-props--tactions)
+- [Simple Stores](#simple-stores)
+- [Middleware](#middleware)
+- [Zustand anti-patterns](#zustand-anti-patterns)
+  - [Bears Example](#bears-example)
+  - [3 ways to read state](#3-ways-to-read-state)
+  - [4 ways to update state](#4-ways-to-update-state)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+
 ## Zustand Best Practices
 
 `zustand-refined` has a simple API, designed to

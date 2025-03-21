@@ -39,8 +39,8 @@ import { StoreApi, UseBoundStore, useStore } from "zustand";
  */
 export function createGlobalState<
   TStore extends GenericStoreApi,
+  THooks,
   TActions,
-  THook = UseBoundStore<TStore>,
 >(config: {
   /**
    * Creates a Zustand store with the initial state
@@ -57,7 +57,7 @@ export function createGlobalState<
    *                   allows you to access the state
    *                   using an optional `selector` function.
    */
-  hooks?: (useStore: UseBoundStore<TStore>) => THook;
+  hooks: (useStore: UseBoundStore<TStore>) => THooks;
   /**
    * Return an "actions" object, with methods for updating the state.
    *
@@ -74,7 +74,7 @@ export function createGlobalState<
     setState: TStore["setState"],
     getState: TStore["getState"],
   ) => TActions;
-}): [THook, TActions] {
+}): [THooks, TActions] {
   // Create the store:
   const store = config.store();
   // Create the actions:
@@ -84,11 +84,9 @@ export function createGlobalState<
   const useBoundStore = ((selector) =>
     useStore(store, selector)) as UseBoundStore<TStore>;
   // Create the custom hooks:
-  const hook = config.hooks
-    ? config.hooks(useBoundStore)
-    : (useBoundStore as THook);
+  const hooks = config.hooks(useBoundStore);
 
-  return [hook, actions] as const;
+  return [hooks, actions] as const;
 }
 
 /**
@@ -110,8 +108,8 @@ export function createGlobalState<
  */
 export function createProviderState<
   TStore extends GenericStoreApi,
+  THooks,
   TActions,
-  THook = UseBoundStore<TStore>,
   TProps = {},
 >(config: {
   /**
@@ -130,11 +128,15 @@ export function createProviderState<
    * @param useStore - The default Zustand hook, which
    *                   allows you to access the state
    *                   using an optional `selector` function.
+   * @param useActions - The `useActions` hook is normally returned
+   *                     as a top-level export, but it's also passed
+   *                     into the hooks function here, in case you
+   *                     want to export it along with the other hooks.
    */
-  hooks?: (
+  hooks: (
     useStore: UseBoundStore<TStore>,
     useActions: ActionsHook<TActions>,
-  ) => THook;
+  ) => THooks;
   /**
    * Return an "actions" object, with methods for updating the state.
    *
@@ -157,7 +159,7 @@ export function createProviderState<
    * Used for improving "Missing StoreProvider" error messages
    */
   displayName?: string;
-}): [THook, ActionsHook<TActions>, StoreProvider<TProps>] {
+}): [THooks, ActionsHook<TActions>, StoreProvider<TProps>] {
   const UNINITIALIZED = Symbol("UNINITIALIZED");
 
   const storeContext = createContext<TStore | typeof UNINITIALIZED>(
@@ -199,11 +201,9 @@ export function createProviderState<
   }) as UseBoundStore<TStore>;
 
   // Create the custom hooks:
-  const hook = config.hooks
-    ? config.hooks(useBoundStore, useActions)
-    : (useBoundStore as THook);
+  const hooks = config.hooks(useBoundStore, useActions);
 
-  return [hook, useActions, StoreProvider] as const;
+  return [hooks, useActions, StoreProvider] as const;
 }
 
 export type StoreProvider<TProps> = FC<PropsWithChildren<TProps>>;

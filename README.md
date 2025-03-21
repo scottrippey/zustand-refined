@@ -18,8 +18,10 @@
     - [`store: (props) => ZustandStore`](#store-props--zustandstore)
     - [`hooks: (useStore) => THooks`](#hooks-usestore--thooks)
     - [`actions: (setState, getState, props) => TActions`](#actions-setstate-getstate-props--tactions)
-- [Simple Stores](#simple-stores)
-- [Middleware](#middleware)
+- [Tips](#tips)
+  - [Passing props](#passing-props)
+  - [Simple Stores](#simple-stores)
+  - [Zustand Middleware](#zustand-middleware)
 - [Zustand anti-patterns](#zustand-anti-patterns)
   - [Bears Example](#bears-example)
   - [3 ways to read state](#3-ways-to-read-state)
@@ -116,7 +118,7 @@ In this example, we export 2 objects:
 - `todoHooks` is simply the return value of the `hooks` function
 - `todoActions` is simply the return value of the `actions` function
 
-### Using hooks and actions:
+### Using hooks and actions
 
 The `hooks` are standard React hooks, so they can be used in components and other hooks.
 With global state, the `actions` are simply static functions that can be called anywhere, any time.
@@ -192,7 +194,7 @@ Key benefits of a **Provider-based state**:
 - The `Provider` can accept `props`, allowing you to customize the initial state, or customize the behavior of actions.
 - Works well with Server-Side Rendering, especially with Next.js.  Zustand recommends [using a Context-based state with Next.js](https://zustand.docs.pmnd.rs/guides/nextjs).
 
-## Configuration Options
+### Configuration Options
 
 Both `createGlobalState` and `createProviderState` require 3 configuration options with the following signature:
 
@@ -207,7 +209,7 @@ type ConfigurationOptions = {
 > The `props` parameter is only available with `createProviderState`.
 
 
-### `store: (props) => ZustandStore`
+#### `store: (props) => ZustandStore`
 
 Creates the Zustand store, which contains the initial state. Supports all Zustand middlewares.
 
@@ -229,7 +231,7 @@ export const [ hooks, actions ] = createGlobalState({
 > The `store` you create should ONLY return the actual state values, and should NOT use these getters or setters.
 
 
-### `hooks: (useStore) => THooks`
+#### `hooks: (useStore) => THooks`
 
 Defines all the hooks that can be used for accessing the state.
 
@@ -257,7 +259,7 @@ export const [ hooks, actions ] = createGlobalState({
 })
 ```
 
-### `actions: (setState, getState, props) => TActions`
+#### `actions: (setState, getState, props) => TActions`
 Defines all the methods that can be used for updating the state.
 
 The `setState` and `getState` functions come directly from the Zustand store.  See the [createStore documentation](https://zustand.docs.pmnd.rs/apis/create-store#usage) for more details on using these functions.
@@ -268,9 +270,52 @@ It performs a shallow merge into the state.  It also supports a callback signatu
 
 
 
+## Tips
 
+### Passing props
 
-## Simple Stores
+One of the big advantages of `createProviderState` is that it supports passing in `props`.  Here's an example:
+
+```tsx
+type CounterProps = { 
+  initialCount: number;
+  incrementBy?: number;
+};
+export const [ counterHooks, useCounterActions, CounterProvider ] = createProviderState({
+  // we define here 👇 what props we expect
+  store: (props: CounterProps) => createStore(() => ({ 
+    count: props.initialCount,
+  })),
+  hooks: (useStore) => ({
+    useCount: () => useStore(s => s.count),
+  }),
+  // The props are passed in here 👇 too
+  actions: (setState, getState, props) => ({
+    increment: () => setState((s) => ({
+      count: s.count + props.incrementBy ?? 1
+    }))
+  }),
+})
+```
+
+To pass in these props, you must add them to the `Provider` in your app:
+
+```tsx
+function ExampleApp() {
+  return (
+    <>
+      <CounterProvider initialCount={0}>
+        <Widget />
+      </CounterProvider>
+      <CounterProvider initialCount={50} incrementBy={10}>
+        <Widget />
+      </CounterProvider>
+    </>
+  );
+}
+```
+
+### Simple Stores
 
 The `hooks` and `actions` methods can return **anything**.  
 For example, for a simple store, you might only need to return a single hook, and a single action:
@@ -291,7 +336,7 @@ export const [ useCounter, incrementCounter ] = createGlobalState({
 })
 ```
 
-## Middleware
+### Zustand Middleware
 
 Middleware is fully supported!
 Simply create your store using the desired middleware.

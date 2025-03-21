@@ -8,10 +8,10 @@
 avoid several [anti-patterns](#zustand-anti-patterns)
 and help achieve these **best practices**:
 
-- **Top Performance**  
+- **Performance**  
   - It should be easy to avoid unnecessary rerendering.
   - Hooks should only subscribe to the actual data they need.
-  - Zustand's caching and memoization techniques should be used correctly.
+  - Zustand's memoization techniques should be used correctly.
   - Actions should be static, and never cause rerenders.
 - **Separation of concerns**  
   - The concepts of defining state, reading state, and updating state should be kept separate.
@@ -19,11 +19,12 @@ and help achieve these **best practices**:
   - `hooks` defines the ways you can **read** state
   - `actions` defines the ways you can **update** state
 - **Code Quality**  
-  - All Zustand-specific logic should be encapsulated.  This includes middleware, selectors, and caching techniques.
-  - The raw state doesn't need to be exposed. Custom hooks should be used for accessing specific parts of state, and should deal with proper caching.
+  - All Zustand-specific logic should be encapsulated.  This includes middleware, selectors, and memoization techniques.
+  - The raw state doesn't need to be exposed. Custom hooks should be used for accessing specific parts of state, and should deal with proper memoization.
+  - Excellent TypeScript support.  All types are inferred, so you don't have to manually declare your types.
 - **Scalability**
-  - It should be easy to create both Global stores and Provider-based local stores. 
-  - It should be easy to migrate from a Global store to a Provider-based local store.
+  - It should be easy to create both **Global** stores and **Provider-based** local stores. 
+  - It should be easy to **migrate** from a Global store to a Provider-based local store.
 
 ## Installation
 
@@ -38,7 +39,7 @@ npm install --save zustand zustand-refined
 
 Here's a classic "To Do" example, using a global state via `createGlobalState(...)`
 ```ts
-import { createStore } from 'zustand';
+import { createStore, useShallow } from 'zustand';
 import { createGlobalState } from 'zustand-refined';
 
 export type TodoItem = { id: string, title: string, complete: boolean };
@@ -55,7 +56,7 @@ export const [ todoHooks, todoActions ] = createGlobalState({
       });
     },
     useByCompleteState: (completed: boolean) => {
-      // 👇 Notice how this hook requires `useShallow` for proper caching:
+      // 👇 Notice how this hook requires `useShallow` for proper memoization:
       return useStore(useShallow(s => {
         return s.todos.find(t => t.completed === completed);
       }));
@@ -91,7 +92,7 @@ In this example, we export 2 objects:
 
 ### Using hooks and actions:
 
-The `hooks` are standard React hooks, so can be used in components and other hooks.
+The `hooks` are standard React hooks, so they can be used in components and other hooks.
 With global state, the `actions` are simply static functions that can be called anywhere, any time.
 
 ```tsx
@@ -162,7 +163,8 @@ To use this Provider-based state, you must add the `<Provider>` to your React tr
 Key benefits of a **Provider-based state**:
 - A `Provider` can be used in multiple sections of your application, each one with separate state.
 - When a `Provider` is unmounted, the state is destroyed; when it gets remounted, the state is reinitialized.
-- The `Provider` can accept `props`, allowing you to customize the initial state, or customize the behavior of actions. 
+- The `Provider` can accept `props`, allowing you to customize the initial state, or customize the behavior of actions.
+- Works well with Server-Side Rendering, especially with Next.js.  Zustand recommends [using a Context-based state with Next.js](https://zustand.docs.pmnd.rs/guides/nextjs).
 
 ## Configuration Options
 
@@ -176,14 +178,14 @@ type ConfigurationOptions = {
 };
 ```
 
-> The `props` parameter is only available with  `createProviderState`.
+> The `props` parameter is only available with `createProviderState`.
 
 
 ### `store: (props) => ZustandStore`
 
 Creates the Zustand store, which contains the initial state. Supports all Zustand middlewares.
 
-> The `props` parameter is only available with  `createProviderState`.
+> The `props` parameter is only available with `createProviderState`.
 
 ```ts
 import { createStore } from "zustand";
@@ -221,7 +223,7 @@ export const [ hooks, actions ] = createGlobalState({
      * Returns the items that match the 'complete' state
      */
     useTodosByCompleteState(complete: boolean) {
-      // 👇 Notice how this hook requires `useShallow` for proper caching:
+      // 👇 Notice how this hook requires `useShallow` for proper memoization:
       return useStore(useShallow(s => s.todos.filter(t => t.complete === complete)))
     }
   }),
@@ -236,7 +238,7 @@ The `setState` and `getState` functions come directly from the Zustand store.  S
 
 It performs a shallow merge into the state.  It also supports a callback signature, which provides easy access to the current state. 
 
-> The `props` parameter is only available with  `createProviderState`.
+> The `props` parameter is only available with `createProviderState`.
 
 
 
@@ -359,7 +361,7 @@ However, even this approach comes with trouble.  The `useBears` hook doesn't req
 Here's how `zustand-refined` solves this problem:
 1. The `getState()` method is not exposed
 2. The `useStore` hook is only exposed to the `hooks` configuration
-3. The `hooks` configuration enables you to write specific hooks, which only return the minimum amount of data using selectors, can properly cache the selectors, and don't expose the entire state object.
+3. The `hooks` configuration enables you to write specific hooks, which only return the minimum amount of data using selectors, can properly memoize the selectors, and don't expose the entire state object.
 
 
 ### 4 ways to update state

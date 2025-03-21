@@ -1,10 +1,10 @@
-# `zustand-actions`
+# `zustand-refined`
 
-`zustand-actions` makes the best of Zustand, by making it easy to adhere to its **best practices**.
+`zustand-refined` makes the best of Zustand, by making it easy to adhere to its **best practices**.
 
 ## Zustand Best Practices
 
-`zustand-actions` has a simple API, designed to
+`zustand-refined` has a simple API, designed to
 avoid several [anti-patterns](#zustand-anti-patterns)
 and help achieve these **best practices**:
 
@@ -27,9 +27,9 @@ and help achieve these **best practices**:
 
 ## Installation
 
-Install both `zustand-actions` and `zustand`:
+Install both `zustand-refined` and `zustand`:
 ```sh
-npm install --save zustand zustand-actions
+npm install --save zustand zustand-refined
 ```
 
 ## Usage Example
@@ -39,7 +39,7 @@ npm install --save zustand zustand-actions
 Here's a classic "To Do" example, using a global state via `createGlobalState(...)`
 ```ts
 import { createStore } from 'zustand';
-import { createGlobalState } from 'zustand-actions';
+import { createGlobalState } from 'zustand-refined';
 
 export type TodoItem = { id: string, title: string, complete: boolean };
 export const [ todoHooks, todoActions ] = createGlobalState({
@@ -187,7 +187,7 @@ Creates the Zustand store, which contains the initial state. Supports all Zustan
 
 ```ts
 import { createStore } from "zustand";
-import { createGlobalState } from "zustand-actions";
+import { createGlobalState } from "zustand-refined";
 
 export const [ hooks, actions ] = createGlobalState({
   store: () => createStore(() => ({ todos: [] })),
@@ -197,7 +197,7 @@ export const [ hooks, actions ] = createGlobalState({
 
 
 > Note: when creating a Zustand store, normally the initializer accepts 2 parameters, like `createStore((setState, getState) => (initial state))`.  
-> However, with `zustand-actions`, we will be creating our "getters" as `hooks`, and our "setters" as `actions`, so there is no need to use these parameters.  
+> However, with `zustand-refined`, we will be creating our "getters" as `hooks`, and our "setters" as `actions`, so there is no need to use these parameters.  
 > The `store` you create should ONLY return the actual state values, and should NOT use these getters or setters.
 
 
@@ -248,7 +248,7 @@ The `hooks` and `actions` methods can return **anything**.
 For example, for a simple store, you might only need to return a single hook, and a single action:
 
 ```ts
-import { createGlobalState } from './zustand-actions';
+import { createGlobalState } from "zustand-refined";
 
 export const [ useCounter, incrementCounter ] = createGlobalState({
   store: () => createStore(() => ({ count: 0 })),
@@ -274,7 +274,7 @@ Some middleware changes the signature of `setState`.  For example, `devtools` ad
 import { createStore } from "zustand";
 import { devtools } from "zustand/middleware/devtools";
 import { immer } from "zustand/middleware/immer";
-import { createGlobalState } from "zustand-actions";
+import { createGlobalState } from "zustand-refined";
 
 export const [ hooks, actions ] = createGlobalState({
   store: () => createStore(
@@ -314,7 +314,7 @@ Zustand is powerful, but its flexibility can easily cause problems in codebases.
 
 The documentation shows 3 ways to read state, and 4 ways to update state!  Many of these approaches have hidden performance issues.
 
-Using `zustand-actions` avoids most of these issues, but you should still be aware of these problems, so you can be sure to create a performant application.
+Using `zustand-refined` avoids most of these issues, but you should still be aware of these problems, so you can be sure to create a performant application.
 
 ### Bears Example
 
@@ -356,7 +356,7 @@ Can you spot which approaches are problematic?
 - `Bears3` is implemented "correctly", and will only rerender when the `bears` value changes!  Using a selector ensures we minimize the rerendering.  This is great.  
 However, even this approach comes with trouble.  The `useBears` hook doesn't require a selector, and even if it did, we can't enforce that the selector is picking the "minimum" amount of data.
 
-Here's how `zustand-actions` solves this problem:
+Here's how `zustand-refined` solves this problem:
 1. The `getState()` method is not exposed
 2. The `useStore` hook is only exposed to the `hooks` configuration
 3. The `hooks` configuration enables you to write specific hooks, which only return the minimum amount of data using selectors, can properly cache the selectors, and don't expose the entire state object.
@@ -392,7 +392,7 @@ Again, can you spot the problematic components?
 - `IncreaseBears3` is BAD! This component will now rerender whenever the state is updated!
 - `IncreaseBears4` is also a code smell. The `increaseBears` method should not require a  hook call; putting actions behind a hook makes your components needlessly more complex.  Grabbing multiple actions is also quite cumbersome.
 
-Again, here's how `zustand-actions` avoids these problems:
+Again, here's how `zustand-refined` avoids these problems:
 
 1. The `setState()` method is never exposed; it is only accessible within the `actions` method.
 2. Actions are kept separate from the state.

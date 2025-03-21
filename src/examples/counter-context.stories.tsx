@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { createStore } from "zustand";
-import { createProviderState } from "../zustand-actions";
+import { createProviderState } from "../zustand-refined";
 
 type CounterProps = { initialCount?: number; incrementBy?: number };
 export const [counterHooks, useCounterActions, CounterProvider] =

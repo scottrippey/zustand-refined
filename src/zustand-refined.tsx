@@ -2,14 +2,6 @@ import { createContext, useContext, FC, PropsWithChildren } from "react";
 import { StoreApi, UseBoundStore, useStore } from "zustand";
 
 /**
- * Zustand best-practices:
- *
- * - Use hooks for getting state
- * - Always use a selector
- * - Use static methods for all mutations (aka "actions")
- */
-
-/**
  * Creates a global (singleton) state.
  *
  * This enforces best practices within Zustand,
@@ -114,8 +106,6 @@ export function createGlobalState<
  * - The hooks returned by `hooks`
  * - A `ActionsHook` for the Actions returned by `actions`
  * - A `StoreProvider` for creating the isolated stores in your React application
- *
- * @example
  *
  */
 export function createProviderState<

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createStore } from "zustand";
-import { createProviderState } from "../zustand-actions";
+import { createProviderState } from "../zustand-refined";
 
 const [useCounter, useCounterActions, CounterProvider] = createProviderState({
   store: (props: { initialCount?: number }) =>

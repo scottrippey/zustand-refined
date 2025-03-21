@@ -1,6 +1,6 @@
 import { createStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
-import { createGlobalState } from "../zustand-actions";
+import { createGlobalState } from "../zustand-refined";
 
 type TodoItem = { completed: boolean; title: string; id: string };
 export const [todoHooks, todoActions] = createGlobalState({

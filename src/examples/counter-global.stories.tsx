@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createStore } from "zustand";
-import { createGlobalState } from "../zustand-actions";
+import { createGlobalState } from "../zustand-refined";
 
 const [useCount, counterActions] = createGlobalState({
   store: () =>

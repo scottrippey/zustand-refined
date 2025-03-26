@@ -420,16 +420,16 @@ function Bears3() {
 }
 ```
 
-Can you spot which approaches are problematic?
+Can you spot which approaches above are problematic?
 
-- `Bears1` didn't actually use the hook to access `bears`, so our component won't rerender when it changes.
+- ⛔️ `Bears1` didn't actually use the hook to access `bears`, so our component won't rerender when it changes.
 
-- `Bears2` subscribes to ALL state updates.  This might not be very visible right now, since `bears` is the only state value.  But imagine we add `fishes` to our state; updates to `fishes` will cause `Bears2` to rerender.
+- ⛔️ `Bears2` subscribes to ALL state updates.  This might not be very visible right now, since `bears` is the only state value.  But imagine we add `fishes` to our state; updates to `fishes` will cause `Bears2` to rerender.
 
-- `Bears3` is implemented "correctly", and will only rerender when the `bears` value changes!  Using a selector ensures we minimize the rerendering.  This is great.  
-However, even this approach comes with trouble.  The `useBears` hook doesn't require a selector, and even if it did, we can't enforce that the selector is picking the "minimum" amount of data.
+- 👍 `Bears3` is implemented "correctly", because it uses a selector to pick the state it needs. It will only rerender when the `bears` value changes!  Using a selector ensures we minimize the rerendering.  This is great.  
+  ⚠️ However, even this approach comes with trouble.  The selector is optional in the `useBears` hook. And, using a selector can be tricky; some selectors need to be wrapped with Zustand's `useShallow` for them to work correctly! 
 
-They're all problematic, to varying degrees.
+So all 3 approaches are problematic, to varying degrees!
 
 
 ### 4 ways to update state
@@ -455,18 +455,18 @@ function IncreaseBears4() {
 }
 ```
 
-Again, can you spot the problematic components?
+Again, can you spot the problematic components above?
 
-- `IncreaseBears1` is clearly problematic, since there's no encapsulation. The component has to implement Zustand-specific APIs, and also must know how the state is stored.
-- `IncreaseBears2` is not terrible, but the `getState()` call is a code smell ... you're NOT supposed to read state this way, so why should you be able to update state this way?
-- `IncreaseBears3` is BAD! This component will now rerender whenever the state is updated!
-- `IncreaseBears4` is also a code smell. The `increaseBears` method should not require a  hook call; putting actions behind a hook makes your components needlessly more complex.  Grabbing multiple actions is also quite cumbersome.
+- ⚠️ `IncreaseBears1` is clearly problematic, since there's no encapsulation. The component has to implement Zustand-specific APIs, and also must know how the state is stored.
+- ⚠️ `IncreaseBears2` is not terrible, but the `getState()` call is a code smell ... you're NOT supposed to read state this way, so why should you be able to update state this way?
+- ⛔️ `IncreaseBears3` is BAD! This component will now rerender whenever the state is updated!
+- ⚠️ `IncreaseBears4` is also a code smell. The `increaseBears` method should not require a hook call; putting actions behind a hook makes your components needlessly more complex.  Grabbing multiple actions is also quite cumbersome.
 
-Again they're all problematic, to varying degrees.
+They're all problematic, to varying degrees.
 
-### How `zustand-refined` avoids these anti-patterns
+### How `zustand-refined` prevents these anti-patterns
 
-Here's how to implement the same store with `zustand-refined`:
+Implementing this same store with `zustand-refined` is very easy! It simply requires you to **separate** the `store`, the `hooks`, and the `actions`:
 
 ```tsx
 import { createGlobalState } from './zustand-refined';
@@ -488,22 +488,24 @@ const [{ useBears }, bearsActions] = createGlobalState({
 });
 
 function Bears() {
-  // There's no need for selectors here:
+  // 💚 There's no need use selectors here:
   const bears = useBears();
   return <span>{bears}</span>
 }
 function IncreaseBears() {
-  // No need for any hooks; these global actions are static:
+  // 💚 No need for any hooks; these global actions are defined outside the React lifecycle
   return <button onClick={bearsActions.increaseBears}>More Bears!</button>;
 }
 ```
 
 Here's how `zustand-refined` solved those anti-patterns:
 
-1. The raw `getState()`, `setState()`, and `useStore(selector)` methods are never exported.  You can only access them internally.
-2. The `store` configuration defines just the state.
-3. The `actions` configuration encapsulates the `setState()` method, and exposes specific actions.
-4. The `hooks` configuration encapsulates the `useStore(selector)` hook, and exposes specific hooks.
-5. When creating specific hooks, you determine how to use selectors, and you also are responsible for memoizing the selector values (using Zustand's `useShallow` when necessary).
-6. For global state, Actions are returned as **static methods**, which are easy to import and call without using any hooks.  Importing these actions will NEVER cause rerenders.
-7. For Provider-based state, all actions are grouped together in a static object, so you can grab all actions with a single `useActions()` hook call.  This actions hook will NEVER cause rerenders.
+1. **Encapsulation**: all Zustand implementation details are encapsulated. You only expose custom `hooks` for reading state, and custom `actions` for setting it.
+2. The raw `getState()`, `setState()`, and `useStore(selector)` methods are never exported.  You can only access them internally.
+3. The `store` configuration contains just the state.
+4. The `actions` configuration encapsulates the `setState()` method, and exposes your own actions.
+5. The `hooks` configuration encapsulates the `useStore(selector)` hook, and exposes your own hooks.
+6. When creating specific hooks, you determine how to use selectors, and you also are responsible for memoizing the selector values (using Zustand's `useShallow` when necessary).
+7. `actions` are easy to use, and will NEVER cause rerenders!
+  - For global state, Actions are returned as **static methods**, which are easy to import and call without using any hooks.
+  - For Provider-based state, the `useActions()` hook returns all the actions.  The actions are static, and will NEVER cause rerenders.

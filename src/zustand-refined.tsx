@@ -1,4 +1,10 @@
-import { createContext, useContext, FC, PropsWithChildren } from "react";
+import {
+  createContext,
+  useContext,
+  FC,
+  PropsWithChildren,
+  useMemo,
+} from "react";
 import { StoreApi, UseBoundStore, useStore } from "zustand";
 
 /**
@@ -110,7 +116,7 @@ export function createProviderState<
   TStore extends GenericStoreApi,
   THooks,
   TActions,
-  TProps = {},
+  TProps extends PropsWithoutChildren = {},
 >(config: {
   /**
    * Returns a Zustand store with the initial state.
@@ -170,13 +176,20 @@ export function createProviderState<
   );
 
   // Create the StoreProvider:
-  const StoreProvider: StoreProvider<TProps> = (props) => {
-    const store = config.store(props);
-    const actions = config.actions(store.setState, store.getState, props);
+  const StoreProvider: StoreProvider<TProps> = ({ children, ..._props }) => {
+    const props = _props as TProps; // (only necessary because we omit 'children')
+
+    // We must only recreate the store + actions if our `props` change
+    const dependencies = Object.values(props);
+    const [store, actions] = useMemo(() => {
+      const store = config.store(props);
+      const actions = config.actions(store.setState, store.getState, props);
+      return [store, actions] as const;
+    }, dependencies);
     return (
       <storeContext.Provider value={store}>
         <actionsContext.Provider value={actions}>
-          {props.children}
+          {children}
         </actionsContext.Provider>
       </storeContext.Provider>
     );
@@ -219,3 +232,7 @@ export type GenericStoreApi<TState = any> = Override<
   { setState: (...args: any[]) => void }
 >;
 type Override<T, TOverrides> = Omit<T, keyof TOverrides> & TOverrides;
+type PropsWithoutChildren = {
+  children?: never;
+  [prop: string]: unknown;
+};

@@ -3,9 +3,10 @@ import {
   useContext,
   FC,
   PropsWithChildren,
-  useMemo,
+  useRef,
 } from "react";
 import { StoreApi, UseBoundStore, useStore } from "zustand";
+import { shallow } from "zustand/vanilla/shallow";
 
 /**
  * Creates a global (singleton) state.
@@ -179,13 +180,15 @@ export function createProviderState<
   const StoreProvider: StoreProvider<TProps> = ({ children, ..._props }) => {
     const props = _props as TProps; // (only necessary because we omit 'children')
 
-    // We must only recreate the store + actions if our `props` change
-    const dependencies = Object.values(props);
-    const [store, actions] = useMemo(() => {
-      const store = config.store(props);
-      const actions = config.actions(store.setState, store.getState, props);
-      return [store, actions] as const;
-    }, dependencies);
+    // Only create the store once:
+    const store = useRefMemo(() => config.store(props));
+
+    const actions = useRefMemo(
+      () => config.actions(store.setState, store.getState, props),
+      // We recreate the `actions` if our `props` change:
+      props,
+    );
+
     return (
       <storeContext.Provider value={store}>
         <actionsContext.Provider value={actions}>
@@ -219,20 +222,36 @@ export function createProviderState<
   return [hooks, useActions, StoreProvider] as const;
 }
 
+/**
+ * Same as `useMemo`, except:
+ * - Uses a `Ref`, to guarantee reference stability (`useMemo` has no guarantee)
+ * - Allows `deps` to be anything; objects and arrays get shallow-compared
+ */
+export function useRefMemo<T>(factory: () => T, deps?: unknown): T {
+  const ref = useRef<null | { deps: unknown; value: T }>(null);
+  if (!ref.current || !shallow(ref.current.deps, deps)) {
+    ref.current = {
+      deps,
+      value: factory(),
+    };
+  }
+  return ref.current.value;
+}
+
 export type StoreProvider<TProps> = FC<PropsWithChildren<TProps>>;
 export type ActionsHook<TActions> = () => TActions;
 
 /**
- * Same as Zustand's StoreApi,
+ * Same as Zustand's `StoreApi` type,
  * but with a more generic version of `setState`,
- * which allows for middleware to modify the signature (eg. devtools).
+ * which allows for middleware to modify the signature (e.g. `devtools`).
  */
 export type GenericStoreApi<TState = any> = Override<
   StoreApi<TState>,
   { setState: (...args: any[]) => void }
 >;
 type Override<T, TOverrides> = Omit<T, keyof TOverrides> & TOverrides;
-type PropsWithoutChildren = {
+export type PropsWithoutChildren = {
   children?: never;
   [prop: string]: unknown;
 };

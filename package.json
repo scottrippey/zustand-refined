@@ -1,0 +1,32 @@
+{
+  "name": "zustand-refined",
+  "description": "Zustand wrapper for implementing best practices",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": {
+    "name": "Scott Rippey",
+    "url": "https://scottrippey.github.io/"
+  },
+  "license": "MIT",
+  "main": "dist/zustand-refined",
+  "devDependencies": {
+    "@types/react": "^19.0.10",
+    "doctoc": "^2.2.1",
+    "prettier": "^3.5.3",
+    "react": "^19.0.0",
+    "typescript": "^5.8.2",
+    "zustand": "^5.0.3"
+  },
+  "peerDependencies": {
+    "zustand": "*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit",
+    "checks": "npm run typecheck && npm run doctoc",
+    "build": "tsc --project tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "doctoc": "doctoc README.md",
+    "prepublishOnly": "npm run checks && npm run clean && npm run build"
+  }
+}

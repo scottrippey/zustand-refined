@@ -1,3 +1,9 @@
+import { Meta } from "@storybook/react";
+const meta: Meta = {
+  title: "Anti-Patterns (Fixed)",
+};
+export default meta;
+
 import { createStore } from "zustand";
 import { createGlobalState } from "../zustand-refined";
 
@@ -26,4 +32,13 @@ function Bears() {
 function IncreaseBears() {
   // 💚 No need for any hooks; these global actions are defined outside the React lifecycle
   return <button onClick={bearsActions.increaseBears}>More Bears!</button>;
+}
+
+export function Story() {
+  return (
+    <section>
+      <Bears />
+      <IncreaseBears />
+    </section>
+  );
 }

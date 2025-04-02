@@ -1,9 +1,13 @@
+import { Meta } from "@storybook/react";
 import { createStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { createGlobalState } from "../zustand-refined";
 
+const meta: Meta = {};
+export default meta;
+
 type TodoItem = { completed: boolean; title: string; id: string };
-export const [todoHooks, todoActions] = createGlobalState({
+const [todoHooks, todoActions] = createGlobalState({
   store: () =>
     createStore(() => ({
       todos: [] as TodoItem[],
@@ -33,7 +37,7 @@ export const [todoHooks, todoActions] = createGlobalState({
 });
 
 // UI Demo:
-function Todos() {
+export function Todos() {
   const completed = todoHooks.useCompleted();
   const incomplete = todoHooks.useIncomplete();
   return (

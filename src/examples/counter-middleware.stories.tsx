@@ -1,8 +1,12 @@
+import { Meta } from "@storybook/react";
 import { useEffect } from "react";
 import { createStore } from "zustand";
 import { devtools } from "zustand/middleware/devtools";
 import { immer } from "zustand/middleware/immer";
 import { createGlobalState } from "../zustand-refined";
+
+const meta: Meta = {};
+export default meta;
 
 export const [useCount, counterActions] = createGlobalState({
   store: () =>

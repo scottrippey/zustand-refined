@@ -1,6 +1,10 @@
+import { Meta } from "@storybook/react";
 import React, { RefObject, useEffect } from "react";
 import { createStore } from "zustand";
 import { createProviderState } from "../zustand-refined";
+
+const meta: Meta = {};
+export default meta;
 
 type CounterProps = { initialCount?: number; incrementBy?: number };
 export const [counterHooks, useCounterActions, CounterProvider] =

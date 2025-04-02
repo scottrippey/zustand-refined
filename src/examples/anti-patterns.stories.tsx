@@ -1,4 +1,9 @@
+import { Meta } from "@storybook/react";
 import { create } from "zustand/react";
+const meta: Meta = {
+  title: "Anti-Patterns",
+};
+export default meta;
 
 type BearsStore = {
   bears: number;

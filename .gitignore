@@ -23,3 +23,5 @@ temp/
 
 # macOS system files
 .DS_Store
+
+*storybook.log

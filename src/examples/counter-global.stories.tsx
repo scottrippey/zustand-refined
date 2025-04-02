@@ -10,7 +10,9 @@ const [useCount, counterActions] = createGlobalState({
   hooks: (useStore) => () => useStore((s) => s.count),
   actions: (setState) => ({
     increment() {
-      setState((old) => ({ count: old.count + 1 }));
+      setState((old) => ({
+        count: old.count + 1,
+      }));
     },
   }),
 });

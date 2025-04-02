@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { RefObject, useEffect } from "react";
 import { createStore } from "zustand";
 import { createProviderState } from "../zustand-refined";
 
 const [useCounter, useCounterActions, CounterProvider] = createProviderState({
-  store: (props: { initialCount?: number }) =>
-    createStore(() => props.initialCount ?? 0),
+  store: (props: RefObject<{ initialCount?: number }>) =>
+    createStore(() => props.current.initialCount ?? 0),
+  hooks: (useStore) => () => useStore(),
   actions: (setState) => ({
     increment() {
       setState((current) => current + 1);

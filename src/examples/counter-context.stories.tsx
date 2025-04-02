@@ -1,29 +1,24 @@
-import React, { useEffect } from "react";
+import React, { RefObject, useEffect } from "react";
 import { createStore } from "zustand";
 import { createProviderState } from "../zustand-refined";
 
 type CounterProps = { initialCount?: number; incrementBy?: number };
 export const [counterHooks, useCounterActions, CounterProvider] =
   createProviderState({
-    store(props: CounterProps) {
-      return createStore(() => ({
-        count: props.initialCount ?? 0,
-      }));
-    },
-    actions(setState, _getState, props) {
-      return {
-        increment() {
-          setState((curr) => ({
-            count: curr.count + (props.incrementBy ?? 1),
-          }));
-        },
-      };
-    },
-    hooks(useStore) {
-      return {
-        useCount: () => useStore((s) => s.count),
-      };
-    },
+    store: (props: RefObject<CounterProps>) =>
+      createStore(() => ({
+        count: props.current.initialCount ?? 0,
+      })),
+    actions: (setState, _getState, props) => ({
+      increment() {
+        setState((curr) => ({
+          count: curr.count + (props.current.incrementBy ?? 1),
+        }));
+      },
+    }),
+    hooks: (useStore) => ({
+      useCount: () => useStore((s) => s.count),
+    }),
   });
 
 // UI Demo:
@@ -37,7 +32,6 @@ function CountDisplay() {
   );
 }
 function IncrementButton() {
-  counterHooks.useCount();
   const countActions = useCounterActions();
   return (
     <button

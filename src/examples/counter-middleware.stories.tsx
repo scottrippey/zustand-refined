@@ -18,7 +18,7 @@ export const [useCount, counterActions] = createGlobalState({
     increment(amount = 1) {
       setState(
         (curr) => {
-          // This syntax is supported due to `immer` middleware:
+          // This syntax is supported by the `immer` middleware:
           curr.count += amount;
         },
         false,

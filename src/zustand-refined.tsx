@@ -4,9 +4,9 @@ import {
   FC,
   PropsWithChildren,
   useRef,
+  RefObject,
 } from "react";
 import { StoreApi, UseBoundStore, useStore } from "zustand";
-import { shallow } from "zustand/vanilla/shallow";
 
 /**
  * Creates a global (singleton) state.
@@ -63,8 +63,13 @@ export function createGlobalState<
    * @param useStore - The default Zustand hook, which
    *                   allows you to access the state
    *                   using an optional `selector` function.
+   *
+   * @param actions - The `actions` object is normally returned
+   *                     as a top-level export, but it's also passed
+   *                     into the hooks function here, in case you
+   *                     want to export it alongside the other hooks.
    */
-  hooks: (useStore: UseBoundStore<TStore>) => THooks;
+  hooks: (useStore: UseBoundStore<TStore>, actions: TActions) => THooks;
   /**
    * Return an "actions" object, with methods for updating the state.
    *
@@ -91,7 +96,7 @@ export function createGlobalState<
   const useBoundStore = ((selector) =>
     useStore(store, selector)) as UseBoundStore<TStore>;
   // Create the custom hooks:
-  const hooks = config.hooks(useBoundStore);
+  const hooks = config.hooks(useBoundStore, actions);
 
   return [hooks, actions] as const;
 }
@@ -124,7 +129,7 @@ export function createProviderState<
    *
    * This will be called for each StoreProvider you use.
    */
-  store: (props: TProps) => TStore;
+  store: (props: RefObject<TProps>) => TStore;
   /**
    * This function allows you to customize
    * what hooks you expose externally.
@@ -138,7 +143,7 @@ export function createProviderState<
    * @param useActions - The `useActions` hook is normally returned
    *                     as a top-level export, but it's also passed
    *                     into the hooks function here, in case you
-   *                     want to export it along with the other hooks.
+   *                     want to export it alongside the other hooks.
    */
   hooks: (
     useStore: UseBoundStore<TStore>,
@@ -160,7 +165,7 @@ export function createProviderState<
   actions: (
     setState: TStore["setState"],
     getState: TStore["getState"],
-    props: TProps,
+    props: RefObject<TProps>,
   ) => TActions;
   /**
    * Used for improving "Missing StoreProvider" error messages
@@ -178,15 +183,14 @@ export function createProviderState<
 
   // Create the StoreProvider:
   const StoreProvider: StoreProvider<TProps> = ({ children, ..._props }) => {
-    const props = _props as TProps; // (only necessary because we omit 'children')
+    // Keep the props up-to-date:
+    const propsRef = useRef<TProps>(_props as TProps);
+    propsRef.current = _props as TProps;
 
-    // Only create the store once:
-    const store = useRefMemo(() => config.store(props));
-
-    const actions = useRefMemo(
-      () => config.actions(store.setState, store.getState, props),
-      // We recreate the `actions` if our `props` change:
-      props,
+    // Only create the store and actions once:
+    const store = useRefMemo(() => config.store(propsRef));
+    const actions = useRefMemo(() =>
+      config.actions(store.setState, store.getState, propsRef),
     );
 
     return (
@@ -213,7 +217,7 @@ export function createProviderState<
     if (store === UNINITIALIZED) {
       throw new Error(`Missing '${config.displayName || "StoreProvider"}'`);
     }
-    return selector ? useStore(store, selector) : useStore(store);
+    return useStore(store, selector);
   }) as UseBoundStore<TStore>;
 
   // Create the custom hooks:
@@ -225,13 +229,11 @@ export function createProviderState<
 /**
  * Same as `useMemo`, except:
  * - Uses a `Ref`, to guarantee reference stability (`useMemo` has no guarantee)
- * - Allows `deps` to be anything; objects and arrays get shallow-compared
  */
-export function useRefMemo<T>(factory: () => T, deps?: unknown): T {
-  const ref = useRef<null | { deps: unknown; value: T }>(null);
-  if (!ref.current || !shallow(ref.current.deps, deps)) {
+export function useRefMemo<T>(factory: () => T): T {
+  const ref = useRef<null | { value: T }>(null);
+  if (!ref.current) {
     ref.current = {
-      deps,
       value: factory(),
     };
   }

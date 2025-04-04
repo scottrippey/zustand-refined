@@ -277,14 +277,15 @@ It performs a shallow merge into the state.  It also supports a callback signatu
 One of the big advantages of `createProviderState` is that it supports passing in `props`.  Here's an example:
 
 ```tsx
+import type { RefObject } from "react";
 type CounterProps = { 
   initialCount: number;
   incrementBy?: number;
 };
 export const [ counterHooks, useCounterActions, CounterProvider ] = createProviderState({
   // we define here 👇 what props we expect
-  store: (props: CounterProps) => createStore(() => ({ 
-    count: props.initialCount,
+  store: (props: RefObject<CounterProps>) => createStore(() => ({ 
+    count: props.current.initialCount,
   })),
   hooks: (useStore) => ({
     useCount: () => useStore(s => s.count),
@@ -292,13 +293,15 @@ export const [ counterHooks, useCounterActions, CounterProvider ] = createProvid
   // The props are passed in here 👇 too
   actions: (setState, getState, props) => ({
     increment: () => setState((s) => ({
-      count: s.count + props.incrementBy ?? 1
+      count: s.count + props.current.incrementBy ?? 1
     }))
   }),
 })
 ```
 
-To pass in these props, you must add them to the `Provider` in your app:
+> Note: `props` is passed as a `RefObject`, which means you must use `props.current` to retrieve the most current props
+
+These props get passed through the `Provider` in your app:
 
 ```tsx
 function ExampleApp() {

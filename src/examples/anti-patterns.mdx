@@ -78,8 +78,7 @@ With the Bears example, there are 4 ways to update state!
 
 ```tsx
 function IncreaseBears1() {
-  const increaseBears = () =>
-    useBears.setState((s) => ({ bears: s.bears + 1 }));
+  const increaseBears = () => useBears.setState((s) => ({ bears: s.bears + 1 }));
   return <button onClick={increaseBears}>More Bears!</button>;
 }
 function IncreaseBears2() {

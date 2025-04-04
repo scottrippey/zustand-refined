@@ -8,7 +8,8 @@ import { storybookTest } from "@storybook/experimental-addon-test/vitest-plugin"
 const dirname =
   typeof __dirname !== "undefined"
     ? __dirname
-    : path.dirname(fileURLToPath(import.meta.url));
+    : // @ts-expect-error - import.meta is not allowed
+      path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/writing-tests/test-addon
 export default defineConfig({

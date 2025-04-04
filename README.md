@@ -140,7 +140,7 @@ function TodoItem(props: { id: string }) {
         checked={item.complete}
         onChange={(ev) => {
           // 📝 Update the state using an action:
-          todoActions.toggleCompleted(id, ev.currentTarget.checked);
+          todoActions.update(id, { complete: ev.currentTarget.checked });
         }}
       />
       {item.title}

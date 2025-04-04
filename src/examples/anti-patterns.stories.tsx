@@ -1,17 +1,27 @@
-import { Meta } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 import { create } from "zustand/react";
 const meta: Meta = {
   title: "Anti-Patterns",
 };
 export default meta;
 
+/**
+ * ⚠️ Unfortunately, we can't simply infer this from the implementation
+ */
 type BearsStore = {
   bears: number;
   increaseBears(): void;
   removeAllBears(): void;
   updateBears(newBears: number): void;
+
+  fishes: number;
+  increaseFishes(): void;
 };
 
+/**
+ * This example comes from Zustand's docs:
+ */
 const useBears = create<BearsStore>()((set) => ({
   bears: 0,
   increaseBears: () =>
@@ -26,26 +36,49 @@ const useBears = create<BearsStore>()((set) => ({
     set({
       bears: newBears,
     }),
+
+  // This also comes from Zustand docs:
+  fishes: 0,
+  increaseFishes: () =>
+    set((prev) => ({
+      fishes: prev.fishes + 1,
+    })),
 }));
 
-// There are 3 different ways to read state;
-// can you find the problematic one(s)?
+// Zustand provides 3 different ways to read state.
+// ⚠️ Most of them are problematic!  Can you spot which ones?
 
 export function Bears1() {
+  const [, rerender] = useState<any>(null);
+  const rerenderButton = <button onClick={rerender}>Unrelated Rerender</button>;
+
   const bears = useBears.getState().bears;
-  return <span>{bears}</span>;
+  return (
+    <div>
+      Bears: {bears} <StoryButtons /> {rerenderButton}
+    </div>
+  );
 }
+
 export function Bears2() {
   const { bears } = useBears();
-  return <span>{bears}</span>;
+  return (
+    <div>
+      Bears: {bears} <StoryButtons />
+    </div>
+  );
 }
 export function Bears3() {
   const bears = useBears((s) => s.bears);
-  return <span>{bears}</span>;
+  return (
+    <div>
+      Bears: {bears} <StoryButtons />
+    </div>
+  );
 }
 
-// There are 4 different ways to update state;
-// can you find the problematic one(s)?
+// There are 4 different ways to update state.
+// ⚠️ Most of them are problematic!  Can you spot which ones?
 
 export function IncreaseBears1() {
   const increaseBears = () =>
@@ -63,4 +96,14 @@ export function IncreaseBears3() {
 export function IncreaseBears4() {
   const increaseBears = useBears((s) => s.increaseBears);
   return <button onClick={increaseBears}>More Bears!</button>;
+}
+
+const actions = useBears.getState();
+export function StoryButtons() {
+  return (
+    <>
+      <button onClick={actions.increaseBears}>More Bears</button>{" "}
+      <button onClick={actions.increaseFishes}>More Fish</button>
+    </>
+  );
 }

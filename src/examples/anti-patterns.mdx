@@ -1,0 +1,165 @@
+import { Canvas, Meta } from '@storybook/blocks';
+
+import * as Stories from './anti-patterns.stories';
+import * as StoriesImproved from './anti-patterns.improved.stories';
+
+<Meta of={Stories} />
+
+# Zustand Anti-patterns
+
+Zustand is powerful, but its flexibility can easily cause problems in codebases.
+
+The documentation shows 3 ways to read state, and 4 ways to update state!  Many of these approaches have hidden performance issues.
+
+Using `zustand-refined` avoids most of these issues, but you should still be aware of these problems, so you can be sure to create a performant application.
+
+## Bears Example
+
+We will use this example from the Zustand docs:
+
+```ts
+import { create } from "zustand";
+const useBears = create((set) => ({
+  bears: 0,
+  increaseBears: () => set((state) => ({ bears: state.bears + 1 })),
+  removeAllBears: () => set({ bears: 0 }),
+  updateBears: (newBears) => set({ bears: newBears }),
+
+  // This also comes from Zustand docs:
+  fishes: 0,
+  increaseFishes: () => set((state) => ({ fishes: state.fishes + 1 })),
+}))
+```
+
+## There are 3 ways to read state
+
+With the above store, there are 3 ways to retrieve the state:
+
+```tsx
+
+export function Bears1() {
+  const bears = useBears.getState().bears;
+  return <div>Bears: {bears}</div>;
+}
+export function Bears2() {
+  const { bears } = useBears();
+  return <div>Bears: {bears}</div>;
+}
+export function Bears3() {
+  const bears = useBears((s) => s.bears);
+  return <div>Bears: {bears}</div>;
+}
+```
+
+
+Can you spot which approaches above are problematic?
+
+- ⛔️ `Bears1` didn't actually use the hook to access `bears`, so our component won't rerender when it changes.
+<Canvas of={Stories.Bears1} />
+
+- ⛔️ `Bears2` subscribes to ALL state updates.  This might not be very visible right now, since `bears` is the only state value.  But imagine we add `fishes` to our state; updates to `fishes` will cause `Bears2` to rerender.
+<Canvas of={Stories.Bears2} />
+
+- 💚 `Bears3` is implemented "correctly", because it uses a selector to pick the state it needs. It will only rerender when the `bears` value changes!  Using a selector ensures we minimize the rerendering.  This is great.
+<Canvas of={Stories.Bears3} />
+
+  ⚠️ BUT WAIT, even this approach comes with trouble!
+  - The selector is optional in the `useBears` hook.
+  - The raw store is exposed to the consumer.
+  - Some selectors need to be wrapped with Zustand's `useShallow` for them to work correctly.
+
+So all 3 approaches are problematic, to varying degrees!
+
+
+## 4 ways to update state
+
+With the Bears example, there are 4 ways to update state!
+
+```tsx
+function IncreaseBears1() {
+  const increaseBears = () => useBears.setState(s => ({ bears: s.bears + 1 }));
+  return <button onClick={increaseBears}>More Bears!</button>;
+}
+function IncreaseBears2() {
+  const increaseBears = useBears.getState().increaseBears;
+  return <button onClick={increaseBears}>More Bears!</button>;
+}
+function IncreaseBears3() {
+  const { increaseBears } = useBears();
+  return <button onClick={increaseBears}>More Bears!</button>;
+}
+function IncreaseBears4() {
+  const increaseBears = useBears(s => s.increaseBears);
+  return <button onClick={increaseBears}>More Bears!</button>;
+}
+```
+
+Again, can you spot the problematic components above?
+
+- ⚠️ `IncreaseBears1` is terrible code. There's no encapsulation. The component has to implement Zustand-specific APIs, and must know how the state is stored and updated.
+  <Canvas of={Stories.IncreaseBears1} />
+
+- ⚠️ `IncreaseBears2` is not terrible, but the `getState()` call is a code smell ... you're NOT supposed to **read** state this way, so why would you **update** state this way?
+<Canvas of={Stories.IncreaseBears2} />
+
+- ⛔️ `IncreaseBears3` is actually **BAD**! This component will now rerender whenever the state is updated.
+<Canvas of={Stories.IncreaseBears3} />
+
+- ⚠️ `IncreaseBears4` is also a code smell. The `increaseBears` method should not require a hook call; putting actions behind a hook makes your components needlessly more complex.  Grabbing multiple actions is also quite cumbersome.
+<Canvas of={Stories.IncreaseBears4} />
+
+Again, all 4 approaches are problematic, to varying degrees.
+
+
+## How `zustand-refined` prevents these anti-patterns
+
+Implementing this same store with `zustand-refined` is very easy! It simply requires you to **separate** the `store`, the `hooks`, and the `actions`:
+
+```tsx
+import { createGlobalState } from 'zustand-refined';
+
+const [{ useBears }, bearsActions] = createGlobalState({
+  store: () => createStore(() => ({
+    bears: 0,
+    fishes: 0,
+  })),
+  hooks: (useStore) => ({
+    // Do not expose any "selector" logic; just export a simple `useBears()` hook
+    useBears: () => useStore(s => s.bears),
+    useFishes: () => useStore((s) => s.fishes),
+  }),
+  actions: (setState) => ({
+    // Actions are not part of the state, they're kept separate:
+    increaseBears: () => setState((state) => ({ bears: state.bears + 1 })),
+    removeAllBears: () => setState({ bears: 0 }),
+    updateBears: (newBears) => setState({ bears: newBears }),
+    increaseFish: () => setState((state) => ({ fishes: state.fishes + 1 })),
+  }),
+});
+
+function Bears5() {
+  // 💚 There's no need use selectors here:
+  const bears = useBears();
+  return <span>Bears: {bears}</span>
+}
+function IncreaseBears5() {
+  // 💚 No need for any hooks; these global actions are defined outside the React lifecycle
+  return <button onClick={bearsActions.increaseBears}>More Bears!</button>;
+}
+```
+
+<Canvas of={StoriesImproved.NoAntiPatternsHere} />
+
+Here's how `zustand-refined` solves these anti-patterns:
+
+1. **Encapsulation**: all Zustand implementation details are encapsulated. You only expose custom `hooks` for reading state, and custom `actions` for setting it.
+2. The raw `getState()`, `setState()`, and `useStore(selector)` methods are never exported.  You can only access them internally.
+3. The `store` configuration contains just the state.
+4. The `actions` configuration encapsulates the `setState()` method, and exposes your own actions.
+5. The `hooks` configuration encapsulates the `useStore(selector)` hook, and exposes your own hooks.
+6. When creating specific hooks, you determine how to use selectors, and you also are responsible for memoizing the selector values (using Zustand's `useShallow` when necessary).
+7. `actions` are easy to use, and will NEVER cause rerenders!
+  - For global state, Actions are returned as **static methods**, which are easy to import and call without using any hooks.
+  - For Provider-based state, the `useActions()` hook returns all the actions.  The actions are static, and will NEVER cause rerenders.
+
+

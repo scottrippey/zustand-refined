@@ -2,10 +2,10 @@
 
 `zustand-refined` makes the best of Zustand, by making it easy to adhere to its **best practices**.
 
+**Table of Contents**
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
 
 - [Zustand Best Practices](#zustand-best-practices)
 - [Installation](#installation)
@@ -27,6 +27,7 @@
   - [Bears Example](#bears-example)
   - [3 ways to read state](#3-ways-to-read-state)
   - [4 ways to update state](#4-ways-to-update-state)
+  - [How `zustand-refined` prevents these anti-patterns](#how-zustand-refined-prevents-these-anti-patterns)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

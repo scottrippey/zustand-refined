@@ -98,17 +98,17 @@ export const [todoHooks, todoActions] = createGlobalState({
   }),
   // 📝 Define actions for updating the state:
   actions: (setState) => ({
-    addTodo(item: TodoItem) {
+    add(item: TodoItem) {
       setState((state) => ({
         todos: [...state.todos, item],
       }));
     },
-    toggleTodo(id: string, complete: boolean) {
+    update(id: string, updates: Partial<TodoItem>) {
       setState((state) => ({
-        todos: state.todos.map((t) => (t.id === id ? { ...t, completed } : t)),
+        todos: state.todos.map((t) => (t.id === id ? { ...t, ...updates } : t)),
       }));
     },
-    deleteTodo(id: string) {
+    delete(id: string) {
       setState((state) => ({
         todos: state.todos.filter((t) => t.id !== id),
       }));

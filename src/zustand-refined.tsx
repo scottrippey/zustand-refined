@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  FC,
-  PropsWithChildren,
-  useRef,
-  RefObject,
-} from "react";
+import { createContext, useContext, FC, PropsWithChildren, useRef, RefObject } from "react";
 import { StoreApi, UseBoundStore, useStore } from "zustand";
 
 /**
@@ -44,11 +37,7 @@ import { StoreApi, UseBoundStore, useStore } from "zustand";
  *   }),
  * });
  */
-export function createGlobalState<
-  TStore extends GenericStoreApi,
-  THooks,
-  TActions,
->(config: {
+export function createGlobalState<TStore extends GenericStoreApi, THooks, TActions>(config: {
   /**
    * Creates a Zustand store with the initial state
    */
@@ -82,10 +71,7 @@ export function createGlobalState<
    *                   usually you should use the callback version of
    *                   `setState` to access the previous state.
    */
-  actions: (
-    setState: TStore["setState"],
-    getState: TStore["getState"],
-  ) => TActions;
+  actions: (setState: TStore["setState"], getState: TStore["getState"]) => TActions;
 }): [THooks, TActions] {
   // Create the store:
   const store = config.store();
@@ -93,8 +79,7 @@ export function createGlobalState<
   const actions = config.actions(store.setState, store.getState);
 
   // Create the default Zustand hook:
-  const useBoundStore = ((selector) =>
-    useStore(store, selector)) as UseBoundStore<TStore>;
+  const useBoundStore = ((selector) => useStore(store, selector)) as UseBoundStore<TStore>;
   // Create the custom hooks:
   const hooks = config.hooks(useBoundStore, actions);
 
@@ -145,10 +130,7 @@ export function createProviderState<
    *                     into the hooks function here, in case you
    *                     want to export it alongside the other hooks.
    */
-  hooks: (
-    useStore: UseBoundStore<TStore>,
-    useActions: ActionsHook<TActions>,
-  ) => THooks;
+  hooks: (useStore: UseBoundStore<TStore>, useActions: ActionsHook<TActions>) => THooks;
   /**
    * Return an "actions" object, with methods for updating the state.
    *
@@ -174,12 +156,8 @@ export function createProviderState<
 }): [THooks, ActionsHook<TActions>, StoreProvider<TProps>] {
   const UNINITIALIZED = Symbol("UNINITIALIZED");
 
-  const storeContext = createContext<TStore | typeof UNINITIALIZED>(
-    UNINITIALIZED,
-  );
-  const actionsContext = createContext<TActions | typeof UNINITIALIZED>(
-    UNINITIALIZED,
-  );
+  const storeContext = createContext<TStore | typeof UNINITIALIZED>(UNINITIALIZED);
+  const actionsContext = createContext<TActions | typeof UNINITIALIZED>(UNINITIALIZED);
 
   // Create the StoreProvider:
   const StoreProvider: StoreProvider<TProps> = ({ children, ..._props }) => {
@@ -189,15 +167,11 @@ export function createProviderState<
 
     // Only create the store and actions once:
     const store = useRefMemo(() => config.store(propsRef));
-    const actions = useRefMemo(() =>
-      config.actions(store.setState, store.getState, propsRef),
-    );
+    const actions = useRefMemo(() => config.actions(store.setState, store.getState, propsRef));
 
     return (
       <storeContext.Provider value={store}>
-        <actionsContext.Provider value={actions}>
-          {children}
-        </actionsContext.Provider>
+        <actionsContext.Provider value={actions}>{children}</actionsContext.Provider>
       </storeContext.Provider>
     );
   };

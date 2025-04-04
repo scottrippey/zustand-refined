@@ -7,23 +7,22 @@ const meta: Meta = {};
 export default meta;
 
 type CounterProps = { initialCount?: number; incrementBy?: number };
-export const [counterHooks, useCounterActions, CounterProvider] =
-  createProviderState({
-    store: (props: RefObject<CounterProps>) =>
-      createStore(() => ({
-        count: props.current.initialCount ?? 0,
-      })),
-    actions: (setState, _getState, props) => ({
-      increment() {
-        setState((curr) => ({
-          count: curr.count + (props.current.incrementBy ?? 1),
-        }));
-      },
-    }),
-    hooks: (useStore) => ({
-      useCount: () => useStore((s) => s.count),
-    }),
-  });
+export const [counterHooks, useCounterActions, CounterProvider] = createProviderState({
+  store: (props: RefObject<CounterProps>) =>
+    createStore(() => ({
+      count: props.current.initialCount ?? 0,
+    })),
+  actions: (setState, _getState, props) => ({
+    increment() {
+      setState((curr) => ({
+        count: curr.count + (props.current.incrementBy ?? 1),
+      }));
+    },
+  }),
+  hooks: (useStore) => ({
+    useCount: () => useStore((s) => s.count),
+  }),
+});
 
 // UI Demo:
 

@@ -13,12 +13,9 @@ const [todoHooks, todoActions] = createGlobalState({
       todos: [] as TodoItem[],
     })),
   hooks: (useStore) => ({
-    useById: (id: TodoItem["id"]) =>
-      useStore((s) => s.todos.find((t) => t.id === id)!),
-    useCompleted: () =>
-      useStore(useShallow((s) => s.todos.filter((t) => t.completed))),
-    useIncomplete: () =>
-      useStore(useShallow((s) => s.todos.filter((t) => !t.completed))),
+    useById: (id: TodoItem["id"]) => useStore((s) => s.todos.find((t) => t.id === id)!),
+    useCompleted: () => useStore(useShallow((s) => s.todos.filter((t) => t.completed))),
+    useIncomplete: () => useStore(useShallow((s) => s.todos.filter((t) => !t.completed))),
   }),
   actions: (setState) => ({
     add(item: Omit<TodoItem, "id">) {

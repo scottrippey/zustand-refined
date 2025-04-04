@@ -81,8 +81,7 @@ export function Bears3() {
 // ⚠️ Most of them are problematic!  Can you spot which ones?
 
 export function IncreaseBears1() {
-  const increaseBears = () =>
-    useBears.setState((s) => ({ bears: s.bears + 1 }));
+  const increaseBears = () => useBears.setState((s) => ({ bears: s.bears + 1 }));
   return <button onClick={increaseBears}>More Bears!</button>;
 }
 export function IncreaseBears2() {
@@ -98,12 +97,13 @@ export function IncreaseBears4() {
   return <button onClick={increaseBears}>More Bears!</button>;
 }
 
-const actions = useBears.getState();
 export function StoryButtons() {
+  // Not good code, but good perf:
+  const { increaseBears, increaseFishes } = useBears.getState();
   return (
     <>
-      <button onClick={actions.increaseBears}>More Bears</button>{" "}
-      <button onClick={actions.increaseFishes}>More Fish</button>
+      <button onClick={increaseBears}>More Bears</button>{" "}
+      <button onClick={increaseFishes}>More Fish</button>
     </>
   );
 }

@@ -9,7 +9,7 @@ export default meta;
 const [useCounter, useCounterActions, CounterProvider] = createProviderState({
   store: (props: RefObject<{ initialCount?: number }>) =>
     createStore(() => props.current.initialCount ?? 0),
-  hooks: (useStore) => () => useStore(),
+  hooks: (useStore) => () => useStore((s) => s),
   actions: ({ setState }) => ({
     increment() {
       setState((current) => current + 1);

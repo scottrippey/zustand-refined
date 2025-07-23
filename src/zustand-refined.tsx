@@ -222,12 +222,6 @@ export type ActionsHook<TActions> = () => TActions;
  */
 export type UseBoundStore<S extends GenericStoreApi> = {
   /**
-   * Returns the whole state.
-   *
-   * ⚠️ Using this function without a selector is usually a bad practice.
-   */
-  (): ExtractState<S>;
-  /**
    * Returns a selection of the state.
    * If the selection changes, the component will rerender.
    *

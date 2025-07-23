@@ -1,5 +1,5 @@
 import { createContext, useContext, FC, PropsWithChildren, useRef, RefObject } from "react";
-import { StoreApi, UseBoundStore, useStore } from "zustand";
+import { StoreApi, useStore, ExtractState } from "zustand";
 
 /**
  * Creates a global (singleton) state.
@@ -21,7 +21,7 @@ import { StoreApi, UseBoundStore, useStore } from "zustand";
  *     useIncomplete: () => useStore(useShallow(s => s.todos.filter(t => !t.completed))),
  *     useTodos: () => useStore(s => s.todos),
  *   }),
- *   actions: (setState) => ({
+ *   actions: ({ setState }) => ({
  *     add(item: TodoItem) {
  *       setState(prev => ({
  *         todos: [...prev.todos, item]
@@ -71,15 +71,17 @@ export function createGlobalState<TStore extends GenericStoreApi, THooks, TActio
    *                   usually you should use the callback version of
    *                   `setState` to access the previous state.
    */
-  actions: (setState: TStore["setState"], getState: TStore["getState"]) => TActions;
+  actions: (store: TStore) => TActions;
 }): [THooks, TActions] {
   // Create the store:
   const store = config.store();
   // Create the actions:
-  const actions = config.actions(store.setState, store.getState);
+  const actions = config.actions(store);
 
   // Create the default Zustand hook:
-  const useBoundStore = ((selector) => useStore(store, selector)) as UseBoundStore<TStore>;
+  const useBoundStore: UseBoundStore<TStore> = (selector) => {
+    return useStore(store, selector);
+  };
   // Create the custom hooks:
   const hooks = config.hooks(useBoundStore, actions);
 
@@ -144,11 +146,7 @@ export function createProviderState<
    *                   `setState` to access the previous state.
    * @param props - The props that were passed to the `StoreProvider`, if any
    */
-  actions: (
-    setState: TStore["setState"],
-    getState: TStore["getState"],
-    props: RefObject<TProps>,
-  ) => TActions;
+  actions: (store: TStore, props: RefObject<TProps>) => TActions;
   /**
    * Used for improving "Missing StoreProvider" error messages
    */
@@ -167,7 +165,7 @@ export function createProviderState<
 
     // Only create the store and actions once:
     const store = useRefMemo(() => config.store(propsRef));
-    const actions = useRefMemo(() => config.actions(store.setState, store.getState, propsRef));
+    const actions = useRefMemo(() => config.actions(store, propsRef));
 
     return (
       <storeContext.Provider value={store}>
@@ -186,13 +184,13 @@ export function createProviderState<
   };
 
   // Create the default Zustand hook:
-  const useBoundStore = ((selector) => {
+  const useBoundStore: UseBoundStore<TStore> = (selector) => {
     const store = useContext(storeContext);
     if (store === UNINITIALIZED) {
       throw new Error(`Missing '${config.displayName || "StoreProvider"}'`);
     }
     return useStore(store, selector);
-  }) as UseBoundStore<TStore>;
+  };
 
   // Create the custom hooks:
   const hooks = config.hooks(useBoundStore, useActions);
@@ -216,6 +214,25 @@ export function useRefMemo<T>(factory: () => T): T {
 
 export type StoreProvider<TProps> = FC<PropsWithChildren<TProps>>;
 export type ActionsHook<TActions> = () => TActions;
+
+/**
+ * This is a hook that uses a selector to grab the state.
+ * This is the same as Zustand's UseBoundStore,
+ * except without access to bad-practice properties.
+ */
+export type UseBoundStore<S extends GenericStoreApi> = {
+  /**
+   * Returns a selection of the state.
+   * If the selection changes, the component will rerender.
+   *
+   * If the selection is "computed", consider using
+   * [Zustand's `useShallow` utility](https://zustand.docs.pmnd.rs/hooks/use-shallow)
+   * to prevent rerendering.
+   *
+   * @param selector
+   */
+  <U>(selector: (state: ExtractState<S>) => U): U;
+};
 
 /**
  * Same as Zustand's `StoreApi` type,

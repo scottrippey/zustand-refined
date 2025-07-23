@@ -18,7 +18,7 @@ const [{ useBears, useFishes }, bearsActions] = createGlobalState({
     useBears: () => useStore((s) => s.bears),
     useFishes: () => useStore((s) => s.fishes),
   }),
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     // Actions are not part of the state, they're kept separate:
     increaseBears: () => setState((state) => ({ bears: state.bears + 1 })),
     removeAllBears: () => setState({ bears: 0 }),

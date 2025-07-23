@@ -119,6 +119,7 @@ Again, all 4 approaches are problematic, to varying degrees.
 Implementing this same store with `zustand-refined` is very easy! It simply requires you to **separate** the `store`, the `hooks`, and the `actions`:
 
 ```tsx
+import { createStore } from "zustand";
 import { createGlobalState } from "zustand-refined";
 
 const [{ useBears }, bearsActions] = createGlobalState({
@@ -132,7 +133,7 @@ const [{ useBears }, bearsActions] = createGlobalState({
     useBears: () => useStore((s) => s.bears),
     useFishes: () => useStore((s) => s.fishes),
   }),
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     // Actions are not part of the state, they're kept separate:
     increaseBears: () => setState((state) => ({ bears: state.bears + 1 })),
     removeAllBears: () => setState({ bears: 0 }),

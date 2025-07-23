@@ -35,7 +35,7 @@ const [todoHooks, todoActions] = createGlobalState({
         }),
       ),
   }),
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     add(item: Omit<TodoItem, "id">) {
       setState((prev) => ({
         todos: [...prev.todos, { ...item, id: Math.random().toString() }],

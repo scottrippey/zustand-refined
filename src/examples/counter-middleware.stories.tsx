@@ -18,7 +18,7 @@ export const [useCount, counterActions] = createGlobalState({
       ),
     ),
   hooks: (useStore) => () => useStore((s) => s.count),
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     increment(amount = 1) {
       setState(
         (curr) => {

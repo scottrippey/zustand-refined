@@ -12,7 +12,7 @@ export const [counterHooks, useCounterActions, CounterProvider] = createProvider
     createStore(() => ({
       count: props.current.initialCount ?? 0,
     })),
-  actions: (setState, _getState, props) => ({
+  actions: ({ setState }, props) => ({
     increment() {
       setState((curr) => ({
         count: curr.count + (props.current.incrementBy ?? 1),

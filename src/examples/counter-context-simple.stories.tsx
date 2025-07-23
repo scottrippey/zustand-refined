@@ -10,7 +10,7 @@ const [useCounter, useCounterActions, CounterProvider] = createProviderState({
   store: (props: RefObject<{ initialCount?: number }>) =>
     createStore(() => props.current.initialCount ?? 0),
   hooks: (useStore) => () => useStore(),
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     increment() {
       setState((current) => current + 1);
     },

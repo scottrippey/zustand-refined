@@ -97,7 +97,7 @@ export const [todoHooks, todoActions] = createGlobalState({
     },
   }),
   // 📝 Define actions for updating the state:
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     add(item: TodoItem) {
       setState((state) => ({
         todos: [...state.todos, item],
@@ -164,7 +164,7 @@ export const [hooks, actions] = createGlobalState({
   hooks: (useStore) => ({
     /*...*/
   }),
-  actions: (setState, getState) => ({
+  actions: ({ setState, getState }) => ({
     /*...*/
   }),
 });
@@ -185,7 +185,7 @@ export const [hooks, useActions, Provider] = createProviderState({
   hooks: (useStore) => ({
     /*...*/
   }),
-  actions: (setState, getState, props) => ({
+  actions: ({ setState, getState }, props) => ({
     /*...*/
   }),
 });
@@ -214,7 +214,7 @@ Both `createGlobalState` and `createProviderState` require 3 configuration optio
 type ConfigurationOptions = {
   store: (props) => ZustandStore;
   hooks: (useStore) => THooks;
-  actions: (setState, getState, props) => TActions;
+  actions: ({ setState, getState }, props) => TActions;
 };
 ```
 
@@ -268,7 +268,7 @@ export const [hooks, actions] = createGlobalState({
 });
 ```
 
-#### `actions: (setState, getState, props) => TActions`
+#### `actions: ({ setState, getState }, props) => TActions`
 
 Defines all the methods that can be used for updating the state.
 
@@ -299,8 +299,8 @@ export const [counterHooks, useCounterActions, CounterProvider] = createProvider
   hooks: (useStore) => ({
     useCount: () => useStore((s) => s.count),
   }),
-  // The props are passed in here 👇 too
-  actions: (setState, getState, props) => ({
+  // All the props are passed in here 👇 too
+  actions: ({ setState, getState }, props) => ({
     increment: () =>
       setState((s) => ({
         count: s.count + props.current.incrementBy ?? 1,
@@ -342,7 +342,7 @@ export const [useCounter, incrementCounter] = createGlobalState({
     const useCounter = () => useStore((s) => s.count);
     return useCounter;
   },
-  actions: (setState) => {
+  actions: ({ setState }) => {
     const incrementCounter = () => setState((prev) => ({ count: prev.count + 1 }));
     return incrementCounter;
   },
@@ -369,7 +369,7 @@ export const [hooks, actions] = createGlobalState({
     useCount: () => useStore((s) => s.count),
   }),
   // `setState` now supports devtools and immer:
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     increment() {
       setState(
         (s) => {
@@ -485,7 +485,7 @@ const [{ useBears }, bearsActions] = createGlobalState({
     // Do not expose any "selector" logic; just export a simple `useBears()` hook
     useBears: () => useStore((s) => s.bears),
   }),
-  actions: (setState) => ({
+  actions: ({ setState }) => ({
     // Actions are not part of the state, they're kept separate:
     increaseBears: () => setState((state) => ({ bears: state.bears + 1 })),
     removeAllBears: () => setState({ bears: 0 }),

@@ -1,7 +1,7 @@
 import { Meta } from "@storybook/react";
 import { useEffect } from "react";
 import { createStore } from "zustand";
-import { devtools } from "zustand/middleware/devtools";
+import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { createGlobalState } from "../zustand-refined";
 

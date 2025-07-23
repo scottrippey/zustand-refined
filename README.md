@@ -18,7 +18,7 @@
   - [Configuration Options](#configuration-options)
     - [`store: (props) => ZustandStore`](#store-props--zustandstore)
     - [`hooks: (useStore) => THooks`](#hooks-usestore--thooks)
-    - [`actions: (setState, getState, props) => TActions`](#actions-setstate-getstate-props--tactions)
+    - [`actions: ({ setState, getState }, props) => TActions`](#actions--setstate-getstate--props--tactions)
 - [Tips](#tips)
   - [Passing props](#passing-props)
   - [Simple Stores](#simple-stores)
@@ -358,7 +358,7 @@ Some middleware changes the signature of `setState`. For example, `devtools` add
 
 ```ts
 import { createStore } from "zustand";
-import { devtools } from "zustand/middleware/devtools";
+import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { createGlobalState } from "zustand-refined";
 
